@@ -1,9 +1,10 @@
 import numpy as np
 from pycocotools.coco import COCO
-
+from .coco import CocoDataset
+from .registry import DATASETS
 from .custom import CustomDataset
 
-
+@DATASETS.register_module
 class MyDataset(CustomDataset):
 
     CLASSES = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10',

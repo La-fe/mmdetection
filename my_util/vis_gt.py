@@ -367,7 +367,7 @@ class DataAnalyze:
             cv2.imshow('img', img)
         pass
 
-    def val_analyze(self):
+    def val_analyze(self, flag_coco_json=False):
         '''
         1. val 作为gt的 instance
         2. 模型在val 上的输出 instace
@@ -378,8 +378,14 @@ class DataAnalyze:
         if not (hasattr(self.cfg, 'result_json') and self.cfg.result_json != ''):
             raise(" no result_json ")
 
-        res_ins_list = self.load_res_json(self.cfg.result_json)
-        valr_all_instance, valr_cla_instance, valr_img_instance = self._create_data_dict(res_ins_list, self.cfg.val_img_path, flag_ins_list=True)
+        if flag_coco_json :
+            res_ins_list = self.load_res_json(self.cfg.result_json)
+            valr_all_instance, valr_cla_instance, valr_img_instance = self._create_data_dict(res_ins_list, self.cfg.val_img_path, flag_ins_list=True)
+        else:
+            valr_all_instance, valr_cla_instance, valr_img_instance = self._create_data_dict(self.cfg.result_json,
+                                                                                             self.cfg.val_img_path,
+                                                                                             flag_ins_list=False)
+
         self.val_all_instance, self.val_cla_instance, self.val_img_instance = self.load_coco_format(self.cfg.val_json_paths,
                                                                                                     self.cfg.val_img_path)
         self.visRes_gt(self.val_img_instance, valr_img_instance)

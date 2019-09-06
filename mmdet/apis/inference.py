@@ -89,64 +89,83 @@ def inference_detector(model, img):
 
 
 # TODO: merge this method with the one in BaseDetector
-def show_result(img,
-                result,
-                class_names,
-                score_thr=0.3,
-                wait_time=0,
-                show=True,
-                out_file=None):
-    """Visualize the detection results on the image.
+# def show_result(img,
+#                 result,
+#                 class_names,
+#                 score_thr=0.3,
+#                 wait_time=0,
+#                 show=True,
+#                 out_file=None):
+#     """Visualize the detection results on the image.
+#
+#     Args:
+#         img (str or np.ndarray): Image filename or loaded image.
+#         result (tuple[list] or list): The detection result, can be either
+#             (bbox, segm) or just bbox.
+#         class_names (list[str] or tuple[str]): A list of class names.
+#         score_thr (float): The threshold to visualize the bboxes and masks.
+#         wait_time (int): Value of waitKey param.
+#         show (bool, optional): Whether to show the image with opencv or not.
+#         out_file (str, optional): If specified, the visualization result will
+#             be written to the out file instead of shown in a window.
+#
+#     Returns:
+#         np.ndarray or None: If neither `show` nor `out_file` is specified, the
+#             visualized image is returned, otherwise None is returned.
+#     """
+#     assert isinstance(class_names, (tuple, list))
+#     img = mmcv.imread(img)
+#     img = img.copy()
+#     if isinstance(result, tuple):
+#         bbox_result, segm_result = result
+#     else:
+#         bbox_result, segm_result = result, None
+#     bboxes = np.vstack(bbox_result)
+#     # draw segmentation masks
+#     if segm_result is not None:
+#         segms = mmcv.concat_list(segm_result)
+#         inds = np.where(bboxes[:, -1] > score_thr)[0]
+#         for i in inds:
+#             color_mask = np.random.randint(0, 256, (1, 3), dtype=np.uint8)
+#             mask = maskUtils.decode(segms[i]).astype(np.bool)
+#             img[mask] = img[mask] * 0.5 + color_mask * 0.5
+#     # draw bounding boxes
+#     labels = [
+#         np.full(bbox.shape[0], i, dtype=np.int32)
+#         for i, bbox in enumerate(bbox_result)
+#     ]
+#     labels = np.concatenate(labels)
+#     mmcv.imshow_det_bboxes(
+#         img,
+#         bboxes,
+#         labels,
+#         class_names=class_names,
+#         score_thr=score_thr,
+#         show=show,
+#         wait_time=wait_time,
+#         out_file=out_file)
+#     if not (show or out_file):
+#         return img
 
-    Args:
-        img (str or np.ndarray): Image filename or loaded image.
-        result (tuple[list] or list): The detection result, can be either
-            (bbox, segm) or just bbox.
-        class_names (list[str] or tuple[str]): A list of class names.
-        score_thr (float): The threshold to visualize the bboxes and masks.
-        wait_time (int): Value of waitKey param.
-        show (bool, optional): Whether to show the image with opencv or not.
-        out_file (str, optional): If specified, the visualization result will
-            be written to the out file instead of shown in a window.
-
-    Returns:
-        np.ndarray or None: If neither `show` nor `out_file` is specified, the
-            visualized image is returned, otherwise None is returned.
-    """
-    assert isinstance(class_names, (tuple, list))
-    img = mmcv.imread(img)
-    img = img.copy()
-    if isinstance(result, tuple):
-        bbox_result, segm_result = result
-    else:
-        bbox_result, segm_result = result, None
-    bboxes = np.vstack(bbox_result)
-    # draw segmentation masks
-    if segm_result is not None:
-        segms = mmcv.concat_list(segm_result)
-        inds = np.where(bboxes[:, -1] > score_thr)[0]
-        for i in inds:
-            color_mask = np.random.randint(0, 256, (1, 3), dtype=np.uint8)
-            mask = maskUtils.decode(segms[i]).astype(np.bool)
-            img[mask] = img[mask] * 0.5 + color_mask * 0.5
-    # draw bounding boxes
+def show_result(img, result, dataset='coco', score_thr=0.5,show = True):
+    class_names = get_classes(dataset)
     labels = [
         np.full(bbox.shape[0], i, dtype=np.int32)
-        for i, bbox in enumerate(bbox_result)
+        for i, bbox in enumerate(result)
     ]
+    # print(result)
+    # print(len(result))
     labels = np.concatenate(labels)
-    mmcv.imshow_det_bboxes(
-        img,
+    bboxes = np.vstack(result)
+    img = mmcv.imread(img)
+    anno,img = mmcv.imshow_det_bboxes(
+        img.copy(),
         bboxes,
         labels,
+        show = show,
         class_names=class_names,
-        score_thr=score_thr,
-        show=show,
-        wait_time=wait_time,
-        out_file=out_file)
-    if not (show or out_file):
-        return img
-
+        score_thr=score_thr)
+    return anno,img
 
 def show_result_pyplot(img,
                        result,

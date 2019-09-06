@@ -24,7 +24,9 @@ model = dict(
         anchor_strides=[4, 8, 16, 32, 64],                          # 在每个特征层上的anchor的步长
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
-        use_sigmoid_cls=True),                     # 是否使用sigmoid来进行分类，如果False则使用softmax来分类
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)),                     # 是否使用sigmoid来进行分类，如果False则使用softmax来分类
     bbox_roi_extractor=dict(
         type='SingleRoIExtractor',                 # RoIExtractor类型
         roi_layer=dict(type='RoIAlign',
@@ -40,7 +42,10 @@ model = dict(
         num_classes=21,                            # 分类器的类别数量+1，+1是因为多了一个背景的类别
         target_means=[0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2],
-        reg_class_agnostic=False))
+        reg_class_agnostic=False,
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -60,6 +65,13 @@ train_cfg = dict(
         pos_weight=-1,
         smoothl1_beta=1 / 9.0,                     # 平滑L1系数
         debug=False),                              # debug模式
+    rpn_proposal=dict(
+        nms_across_levels=False,
+        nms_pre=2000,
+        nms_post=2000,
+        max_num=2000,
+        nms_thr=0.7,
+        min_bbox_size=0),
     rcnn=dict(
         assigner=dict(
             type='MaxIoUAssigner',                 # RCNN网络正负样本划分
